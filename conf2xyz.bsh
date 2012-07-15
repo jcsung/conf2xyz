@@ -1,0 +1,49 @@
+#!/bin/bash
+
+argc=$#
+
+if [ $argc -lt $((1)) ]; then
+	echo "Syntax: $0 CONF_FILE"
+	exit
+fi
+
+infile=$1
+outfile=$infile.xyz
+
+if [ -e $outfile ]; then
+	rm $outfile
+fi
+
+head -2 $infile | tail -1 | awk '{print $3}' > $outfile
+head -1 $infile >> $outfile
+
+levcfg=`head -2 $infile | tail -1 | awk '{print $1}'`
+imcon=`head -2 $infile | tail -1 | awk '{print $2}'`
+
+if [ $imcon -gt $((0)) ]; then
+	imcon=3
+fi
+
+exec < $infile
+x=1
+while [ $x -le $((2+imcon)) ]
+do
+	read line
+	x=$((x+1))
+done
+
+while read line
+do
+	atom=`echo $line | awk '{print $1}'`
+	read line
+	x=`echo $line | awk '{print $1}'`
+	y=`echo $line | awk '{print $2}'`
+	z=`echo $line | awk '{print $3}'`
+	i=0
+	while [ $i -lt $levcfg ]
+	do
+		read line
+		i=$((i+1)) 
+	done
+	echo "$atom $x $y $z" >> $outfile
+done
